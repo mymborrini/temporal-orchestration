@@ -1,0 +1,34 @@
+services:
+  temporal:
+    image: temporalio/auto-setup:1.28.0
+    ports:
+      - "45000:7233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=postgres
+    depends_on:
+      - postgres
+
+# To store activities and workflow metadata we need a database
+  postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+    ports:
+      - "45001:5432"
+
+# To check my workflow and activities
+  temporal-ui:
+    image: temporalio/ui:2.39.0
+    ports:
+      - "45002:8080"
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+    depends_on:
+      - temporal
+
+
