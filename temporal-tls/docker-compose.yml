@@ -1,6 +1,6 @@
 services:
   temporal:
-    image: temporalio/auto-setup:1.28.0
+    image: temporalio/auto-setup:1.20.0
     ports:
       - "45000:7233"
     environment:
@@ -17,7 +17,7 @@ services:
     image: postgres:14
     environment:
       - POSTGRES_USER=temporal
-      - POSTGRES_PWD=temporal
+      - POSTGRES_PASSWORD=temporal
     ports:
       - "45001:5432"
 
@@ -30,5 +30,15 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
     depends_on:
       - temporal
+
+  nginx:
+    image: nginx
+    volumes:
+      # - ./nginx-l7.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx-l4.conf:/etc/nginx/nginx.conf
+      - ./tls/server.key:/root/ssl/server.key
+      - ./tls/server.crt:/root/ssl/server.crt
+    ports:
+      - "45003:80"
 
 
