@@ -1,0 +1,24 @@
+package com.skynet.temporal_workflow_client.controller;
+
+import com.skynet.temporal_workflow_client.dto.TravelRequest;
+import com.skynet.temporal_workflow_client.starter.TravelBookingWorkflowStarter;
+import com.skynet.temporal_workflow_client.workflow.TravelWorkflow;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+
+@RestController
+@RequestMapping("/travel")
+@RequiredArgsConstructor
+public class TravelWorkflowController {
+
+    private final TravelBookingWorkflowStarter workflowStarter;
+
+
+    @PostMapping("/book")
+    public ResponseEntity<String> bookTravel(@RequestBody TravelRequest travelRequest){
+        workflowStarter.startWorkflow(travelRequest);
+        return ResponseEntity.ok("Travel booking workflow started for user: " + travelRequest.getUserId());
+    }
+
+}

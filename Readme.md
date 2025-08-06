@@ -52,3 +52,23 @@ Are called *activities* and who trigger the activities is the *workflow* (The tr
  6. If something goes wrong temporal will Retry and Rollback automatically
 
 ![img.png](images/temporal_uml.png)
+
+### Useful commands for postgres
+
+- Connection: `psql -h localhost -p 45001 -U temporal`
+- List of databases: `\list`
+- Connect to a database: `\connect temporal`
+- List of schemas inside the database: `\dn+`
+
+*Remember that in PostgresSQL, schemas are namespaces within a database that contain objects such as tables, views, functions, etc. Setting the search path determines in which order PostgreSQL will look for objects when they are referenced without a qualified schema name.*
+
+In PostgresSQL, you don't "connect" directly to a schema as you do with a database. Instead, you set the current search path. Here's how to do it: 
+- Setting the default search path: `SET search_path TO schema_name;`  `SHOW search_path;`
+- To see tables in a specific schema: `\dt schema_name.*`
+- To see view in a specific schema: `\dv schema_name.*`
+- To see function in a specific schema: `\df schema_name.*`
+
+In fact, you can join tables between different schemas:
+
+    SELECT * FROM schema1.table1
+    JOIN schema2.table2 ON schema1.table1.id = schema2.table2.id;
