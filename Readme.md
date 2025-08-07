@@ -34,6 +34,12 @@ With the following features:
  - Failure Recovery
  - State Management
 
+### Launch temporal
+
+Go to the folder temporal-tls and follow the Readme.md there to check the tls options. Then run
+
+    docker compose up -d
+
 ### Using Temporal
 
 In temporal terms all of this:

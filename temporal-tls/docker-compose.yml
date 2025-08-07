@@ -40,5 +40,7 @@ services:
       - ./tls/server.crt:/root/ssl/server.crt
     ports:
       - "45003:80"
+    depends_on:
+      - temporal
 
 
