@@ -5,10 +5,7 @@ import com.skynet.temporal_workflow_client.starter.TravelBookingWorkflowStarter;
 import com.skynet.temporal_workflow_client.workflow.TravelWorkflow;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -23,6 +20,12 @@ public class TravelWorkflowController {
     public ResponseEntity<String> bookTravel(@RequestBody TravelRequest travelRequest){
         workflowStarter.startWorkflow(travelRequest);
         return ResponseEntity.ok("Travel booking workflow started for user: " + travelRequest.getUserId());
+    }
+
+    @PostMapping("/confirm/{userId}")
+    public ResponseEntity<String> confirmTravel(@PathVariable String userId){
+        workflowStarter.sendConfirmationSignal(userId);
+        return ResponseEntity.ok("Travel confirmation requested by user: " + userId);
     }
 
 }

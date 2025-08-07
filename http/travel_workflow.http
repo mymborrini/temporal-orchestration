@@ -3,7 +3,10 @@ POST http://localhost:9191/travel/book
 Content-Type: application/json
 
 {
-  "travelDate": "10.12.2025",
-  "destination": "Italy",
-  "userId": "13"
+  "travelDate": "08.02.2026",
+  "destination": "Austria",
+  "userId": "11"
 }
+
+### Send POST request with json body
+POST http://localhost:9191/travel/confirm/11

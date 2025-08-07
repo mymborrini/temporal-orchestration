@@ -55,4 +55,22 @@ public class TravelActivitiesImpl implements TravelActivities {
             throw  new RuntimeException("Simulated transport arranged failure!");
         }
     }
+
+    @Override
+    public void cancelBooking(TravelRequest travelRequest) {
+        log.info("Cancelling booking for user: {} to destination: {} on date {}",
+                 travelRequest.getUserId(),
+                 travelRequest.getDestination(),
+                 travelRequest.getTravelDate()
+        );
+    }
+
+    @Override
+    public void confirmBooking(TravelRequest travelRequest) {
+        log.info("Confirming booking for user: {} to destination: {} on date {}",
+                 travelRequest.getUserId(),
+                 travelRequest.getDestination(),
+                 travelRequest.getTravelDate()
+        );
+    }
 }

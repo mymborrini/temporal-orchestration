@@ -32,5 +32,15 @@ public class TravelBookingWorkflowStarter {
        WorkflowClient.start(workflow::bookTrip, travelRequest);
    }
 
+   public void sendConfirmationSignal(String userId){
+     WorkflowClient client = WorkflowClient.newInstance(serviceStubs);
+
+     String workflowId = "travel_" + userId;
+     TravelWorkflow workflow = client.newWorkflowStub(TravelWorkflow.class, workflowId);
+
+     workflow.sendConfirmationSignal();
+
+   }
+
 
 }
