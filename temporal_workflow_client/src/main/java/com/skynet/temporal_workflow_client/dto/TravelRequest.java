@@ -2,6 +2,7 @@ package com.skynet.temporal_workflow_client.dto;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor

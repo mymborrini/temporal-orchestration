@@ -2,6 +2,10 @@ package com.skynet.temporal_workflow_client.starter;
 
 import com.skynet.temporal_workflow_client.dto.TravelRequest;
 import com.skynet.temporal_workflow_client.workflow.TravelWorkflow;
+import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
+import io.temporal.serviceclient.WorkflowServiceStubs;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -15,6 +19,8 @@ public class TravelBookingWorkflowStarter {
    private final WorkflowServiceStubs serviceStubs;
 
    public void startWorkflow(TravelRequest travelRequest) {
+
+     WorkflowClient client = WorkflowClient.newInstance(serviceStubs);
 
        TravelWorkflow workflow = client.newWorkflowStub(
                TravelWorkflow.class,
