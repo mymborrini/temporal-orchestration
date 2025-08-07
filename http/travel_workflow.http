@@ -4,8 +4,8 @@ Content-Type: application/json
 
 {
   "travelDate": "08.02.2026",
-  "destination": "Austria",
-  "userId": "11"
+  "destination": "Romania",
+  "userId": "15"
 }
 
 ### Send POST request with json body

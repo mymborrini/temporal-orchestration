@@ -5,6 +5,7 @@ import com.skynet.temporal_workflow_client.activities.TravelActivities;
 import com.skynet.temporal_workflow_client.dto.TravelRequest;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
+import io.temporal.workflow.Saga;
 import io.temporal.workflow.SignalMethod;
 import io.temporal.workflow.Workflow;
 import org.springframework.stereotype.Service;
@@ -38,27 +39,43 @@ public class TravelWorkflowImpl implements TravelWorkflow{
                                           .build())
                           .build());
 
-        travelActivities.bookFlight(travelRequest);
+        Saga.Options sageOptions = new Saga.Options.Builder().setParallelCompensation(false).build();
 
-        travelActivities.bookHotel(travelRequest);
+        Saga saga = new Saga(sageOptions);
 
-        travelActivities.arrangeTransport(travelRequest);
 
-        /*
-         * 24 hours -> wait for user confirmation if
-         * you won't get any within 24 hours then cancel the workflow and rollback it.
-         * For Demo purpose we will wait for 2 minutes and not 24 hours
-         */
-        log.info("Waiting for user confirmation for 2 minutes...");
-        boolean isConfirmed = Workflow.await(Duration.ofMinutes(2L), () -> isUserConfirmed);
+        try {
+            travelActivities.bookFlight(travelRequest);
+            saga.addCompensation(() -> travelActivities.cancelFlight(travelRequest));
 
-        if (!isConfirmed) {
-            // cancel the booking
-            log.info("User did not confirm within 2 minutes, cancelling the booking for user> {}", travelRequest.getUserId());
-            travelActivities.cancelBooking(travelRequest);
-        } {
-            log.info("User did confirm the booking. User: {}", travelRequest.getUserId());
-            travelActivities.confirmBooking(travelRequest);
+            travelActivities.bookHotel(travelRequest);
+            saga.addCompensation(() -> travelActivities.cancelHotel(travelRequest));
+
+            travelActivities.arrangeTransport(travelRequest);
+            saga.addCompensation(() -> travelActivities.cancelTransport(travelRequest));
+
+            /*
+             * 24 hours -> wait for user confirmation if
+             * you won't get any within 24 hours then cancel the workflow and rollback it.
+             * For Demo purpose we will wait for 2 minutes and not 24 hours
+             */
+            log.info("Waiting for user confirmation for 2 minutes...");
+            boolean isConfirmed = Workflow.await(Duration.ofMinutes(2L), () -> isUserConfirmed);
+
+            if (!isConfirmed) {
+                // cancel the booking
+                log.info("User did not confirm within 2 minutes, cancelling the booking for user> {}", travelRequest.getUserId());
+                travelActivities.cancelBooking(travelRequest);
+            }
+            {
+                log.info("User did confirm the booking. User: {}", travelRequest.getUserId());
+                travelActivities.confirmBooking(travelRequest);
+            }
+
+        }
+        catch (Exception e) {
+            log.error("Error during travel booking for user: {}. Initiating compensation", travelRequest.getUserId(), e);
+            saga.compensate();
         }
 
         log.info("Travel booking completed for user: {}", travelRequest.getUserId());

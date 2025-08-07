@@ -11,4 +11,8 @@ public interface TravelActivities {
     void arrangeTransport(TravelRequest travelRequest);
     void cancelBooking(TravelRequest travelRequest);
     void confirmBooking(TravelRequest travelRequest);
+
+    void cancelFlight(TravelRequest travelRequest);
+    void cancelHotel(TravelRequest travelRequest);
+    void cancelTransport(TravelRequest travelRequest);
 }

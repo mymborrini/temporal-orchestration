@@ -53,6 +53,107 @@ Are called *activities* and who trigger the activities is the *workflow* (The tr
 
 ![img.png](images/temporal_uml.png)
 
+At the beginning of the application there are two new logs
+
+    start: MultiThreadedPoller{name=Workflow Poller taskQueue="TRAVEL_TASK_QUEUE", namespace="default", identity=46252@CH-ADN-F3R6JR3}
+    start: MultiThreadedPoller{name=Activity Poller taskQueue="TRAVEL_TASK_QUEUE", namespace="default", identity=46252@CH-ADN-F3R6JR3}
+
+✅ What do these mean?
+These two lines indicate that the Temporal Worker has started two separate pollers:
+1. Workflow Poller – listens for new workflows to execute
+2. Activity Poller – listens for new activities to execute
+
+Both are using the same task queue:
+
+- taskQueue="TRAVEL_TASK_QUEUE" → this is the queue where the workflow client sends tasks
+- namespace="default" → the Temporal namespace (you can have multiple)
+- identity=46252@CH-ADN-F3R6JR3 → identifies the worker process/machine (hostname + PID)
+
+
+🧠 What is a "poller"?
+A poller is a thread that periodically polls the Temporal server to check:
+
+- ❓ "Are there any workflows to start?" → Workflow Poller
+- ❓ "Are there any activities to run?" → Activity Poller
+
+If there is work to do, the worker picks it up and processes it.
+
+
+
+### Failure Recovery
+
+In case of failure we have to be sure that everything comes back in a consistent state one of the best way to do it is using *Saga*.
+
+🧠 What is a Saga in Temporal?
+A Saga is a pattern used to coordinate a sequence of distributed operations in such a way that, if something fails midway, you can undo or compensate for what has already been done.
+>> In Temporal, a Saga is a sequence of activities, where each step can have an associated compensation (manual rollback).
+
+
+🔁 Concrete example (travel booking workflow):
+1. ✈️ bookFlight()
+2. 🏨 bookHotel()
+3. 🚗 arrangeTransport()
+
+If arrangeTransport() fails, you want to compensate:
+
+- Cancel the hotel
+- Cancel the flight
+
+✅ Temporal SDK has built-in support for Sagas
+
+You can use the Saga class from the Temporal Java SDK. Here's how it works:
+
+    import io.temporal.workflow.saga.Saga;
+
+    @Override
+    public void bookTrip(TravelRequest req) {
+        Saga.Options sagaOptions = new Saga.Options.Builder().setParallelCompensation(false).build();
+        Saga saga = new Saga(sagaOptions);
+
+        try {
+            // 1. Book flight
+            activities.bookFlight(req);
+            saga.addCompensation(() -> activities.cancelFlight(req));
+
+            // 2. Book hotel
+            activities.bookHotel(req);
+            saga.addCompensation(() -> activities.cancelHotel(req));
+
+            // 3. Arrange transport (this might fail)
+            activities.arrangeTransport(req);
+
+        } catch (Exception e) {
+            // Something failed → trigger rollback
+            saga.compensate();
+            throw e;
+        }
+    }
+
+🔄 What does saga.addCompensation(...) do?
+It tells Temporal:
+>> "If we reach this point but something fails afterward, run this compensation function to roll back."
+
+So it doesn't undo immediately, but registers rollback logic to use in case of downstream failure.
+
+⚙️ Saga.Options
+
+- parallelCompensation = false: run compensations sequentially in reverse order (like an undo stack).
+- true: run compensations in parallel (useful if the steps are independent).
+
+🧪 What happens on failure?
+
+- Temporal persists the workflow state (durable and replayable).
+- When an error is thrown, and you call saga.compensate(), Temporal executes the compensation activities.
+- Compensations are treated like normal activities: retryable, trackable, and safe.
+
+🛡️ Benefits of using the Saga pattern in Temporal
+
+- 💾 Persistent workflow state: can resume after restart/crash
+- 💥 Structured and safe error handling
+- 🔁 Declarative and automatic rollback logic
+- 📊 Full traceability and observability via the Temporal UI
+
+
 ### Useful commands for postgres
 
 - Connection: `psql -h localhost -p 45001 -U temporal`

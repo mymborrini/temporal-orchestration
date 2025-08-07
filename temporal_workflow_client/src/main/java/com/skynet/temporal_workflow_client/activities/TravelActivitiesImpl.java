@@ -73,4 +73,19 @@ public class TravelActivitiesImpl implements TravelActivities {
                  travelRequest.getTravelDate()
         );
     }
+
+    @Override
+    public void cancelFlight(TravelRequest travelRequest) {
+        log.info("Cancelling flight for user {}", travelRequest.getUserId());
+    }
+
+    @Override
+    public void cancelHotel(TravelRequest travelRequest) {
+        log.info("Cancelling hotel for user {}", travelRequest.getUserId());
+    }
+
+    @Override
+    public void cancelTransport(TravelRequest travelRequest) {
+        log.info("Cancelling transport for user {}", travelRequest.getUserId());
+    }
 }
