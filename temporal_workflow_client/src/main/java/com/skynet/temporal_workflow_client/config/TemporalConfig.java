@@ -1,5 +1,6 @@
 package com.skynet.temporal_workflow_client.config;
 
+import com.skynet.temporal_workflow_client.activities.TravelActivities;
 import com.skynet.temporal_workflow_client.activities.TravelActivitiesImpl;
 import com.skynet.temporal_workflow_client.workflow.TravelWorkflowImpl;
 import io.temporal.client.WorkflowClient;
@@ -21,14 +22,14 @@ public class TemporalConfig {
    */
 
   @Bean
-  public WorkerFactory workerFactory(WorkflowServiceStubs serviceStubs) {
+  public WorkerFactory workerFactory(WorkflowServiceStubs serviceStubs, TravelActivities travelActivities) {
     WorkflowClient client = WorkflowClient.newInstance(serviceStubs);
     WorkerFactory factory = WorkerFactory.newInstance(client);
 
     // The worker factory needs to be listen to a particular queue
     Worker worker = factory.newWorker("TRAVEL_TASK_QUEUE");
     worker.registerWorkflowImplementationTypes(TravelWorkflowImpl.class);
-    worker.registerActivitiesImplementations(new TravelActivitiesImpl());
+    worker.registerActivitiesImplementations(travelActivities);
 
     return factory;
   }
